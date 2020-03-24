@@ -3,7 +3,6 @@ import torch as th
 from torch import nn
 from torch.nn import init
 from torch.nn.functional import elu
-
 from braindecode.models.base import BaseModel
 from braindecode.torch_ext.init import glorot_weight_zero_bias
 from braindecode.torch_ext.modules import Expression
@@ -16,46 +15,27 @@ class Conv2dWithConstraint(nn.Conv2d):
         super(Conv2dWithConstraint, self).__init__(*args, **kwargs)
 
     def forward(self, x):
-        self.weight.data = th.renorm(
-            self.weight.data, p=2, dim=0, maxnorm=self.max_norm
-        )
+        self.weight.data = th.renorm(self.weight.data, p=2, dim=0, maxnorm=self.max_norm)
         return super(Conv2dWithConstraint, self).forward(x)
 
 
 class EEGNetv4(BaseModel):
     """
     EEGNet v4 model from [EEGNet4]_.
-
     Notes
     -----
-    This implementation is not guaranteed to be correct, has not been checked
-    by original authors, only reimplemented from the paper description.
+    This implementation is not guaranteed to be correct, has not been checked     by original authors, only reimplemented from the paper description.
 
     References
     ----------
-
     .. [EEGNet4] Lawhern, V. J., Solon, A. J., Waytowich, N. R., Gordon,
-       S. M., Hung, C. P., & Lance, B. J. (2018).
-       EEGNet: A Compact Convolutional Network for EEG-based
-       Brain-Computer Interfaces.
+       S. M., Hung, C. P., & Lance, B. J. (2018).        EEGNet: A Compact Convolutional Network for EEG-based        Brain-Computer Interfaces.
        arXiv preprint arXiv:1611.08024.
     """
 
-    def __init__(
-        self,
-        in_chans,
-        n_classes,
-        final_conv_length="auto",
-        input_time_length=None,
-        pool_mode="mean",
-        F1=8,
-        D=2,
+    def __init__(self,in_chans,n_classes,final_conv_length="auto",         input_time_length=None,         pool_mode="mean",         F1=8,         D=2,
         F2=16,  # usually set to F1*D (?)
-        kernel_length=64,
-        third_kernel_size=(8, 4),
-        drop_prob=0.25,
-    ):
-
+        kernel_length=64,         third_kernel_size=(8, 4),         drop_prob=0.25,     ):
         if final_conv_length == "auto":
             assert input_time_length is not None
         self.__dict__.update(locals())
@@ -67,15 +47,7 @@ class EEGNetv4(BaseModel):
         # b c 0 1
         # now to b 1 0 c
         model.add_module("dimshuffle", Expression(_transpose_to_b_1_c_0))
-
-        model.add_module(
-            "conv_temporal",
-            nn.Conv2d(
-                1,
-                self.F1,
-                (1, self.kernel_length),
-                stride=1,
-                bias=False,
+        model.add_module(             "conv_temporal",             nn.Conv2d(                 1,                 self.F1,                 (1, self.kernel_length),                 stride=1,                 bias=False,
                 padding=(0, self.kernel_length // 2),
             ),
         )
@@ -207,12 +179,7 @@ class EEGNet(object):
 
     References
     ----------
-
-    .. [EEGNet] Lawhern, V. J., Solon, A. J., Waytowich, N. R., Gordon, 
-       S. M., Hung, C. P., & Lance, B. J. (2016).
-       EEGNet: A Compact Convolutional Network for EEG-based
-       Brain-Computer Interfaces.
-       arXiv preprint arXiv:1611.08024.
+    .. [EEGNet] Lawhern, V. J., Solon, A. J., Waytowich, N. R., Gordon, S. M., Hung, C. P., & Lance, B. J. (2016). EEGNet: A Compact Convolutional Network for EEG-based Brain-Computer Interfaces. arXiv preprint arXiv:1611.08024.
     """
 
     def __init__(
